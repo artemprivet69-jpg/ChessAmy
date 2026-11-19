@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Данные приложения
+*.db
+*.db-wal
+*.db-shm
+.secret_key
+**/database.db
+**/backups/*.db
+
+# Движок Stockfish (бинарники не коммитим)
+**/stockfish/*.exe
+**/stockfish/*.nnue
+**/stockfish/stockfish.exe
+
+# Логи и локальные артефакты
+*.log
+*.out
+server.log
+server.err
+server.out
+
+# Тесты
+.pytest_cache/
+playwright-report/
+test-results/
+.vscode/
+.idea/
+
+# ОС
+.DS_Store
+Thumbs.db

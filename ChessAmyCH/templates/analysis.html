@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — разбор партии</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body analysis-body" data-page="analysis" data-game-id="{{ game_id }}">
+
+<header class="topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <div class="game-head-info">
+    <span class="badge">Разбор</span>
+    <span class="muted">{{ game.time_control }}</span>
+  </div>
+  <div class="topbar-actions">
+    {% if current_user %}
+    <a class="cup-chip" href="/profile" title="Кубки">
+      <img src="/static/icons/cup.svg" alt="">
+      <span>{{ current_user.cups }}</span>
+    </a>
+    {% endif %}
+    <a class="btn btn-small btn-ghost" href="/game/{{ game_id }}">К партии</a>
+    <a class="btn btn-small btn-ghost" href="/api/game/{{ game_id }}/export/pgn">PGN</a>
+    <a class="btn btn-small btn-ghost" href="/api/game/{{ game_id }}/export/fen" target="_blank" rel="noopener">FEN</a>
+    <a class="btn btn-small btn-ghost" href="/menu">В меню</a>
+  </div>
+</header>
+
+<main class="analysis-layout">
+  <aside class="eval-panel">
+    <div class="eval-bar" title="Оценка позиции">
+      <div class="eval-fill" id="eval-fill"></div>
+      <div class="eval-mid"></div>
+    </div>
+    <div class="eval-number" id="eval-number">0.00</div>
+  </aside>
+
+  <section class="analysis-board-col">
+    <div class="analysis-player-row">
+      <span class="avatar" id="top-avatar">?</span>
+      <div class="player-meta">
+        <span class="player-name" id="top-name">Соперник</span>
+        <span class="player-rating" id="top-sub"></span>
+      </div>
+      <span class="result-pill" id="result-pill"></span>
+    </div>
+
+    <div class="board-wrap analysis-board-wrap">
+      <div class="board" id="board"></div>
+      <svg class="board-arrows" id="board-arrows" viewBox="0 0 800 800" preserveAspectRatio="none"></svg>
+      <div class="label-bubble hidden" id="label-bubble">
+        <img id="label-bubble-icon" alt="">
+        <span id="label-bubble-mark"></span>
+      </div>
+    </div>
+
+    <div class="analysis-controls">
+      <button class="icon-btn" id="nav-start" type="button" title="В начало">|&lt;</button>
+      <button class="icon-btn" id="nav-prev" type="button" title="Назад">&lt;</button>
+      <button class="icon-btn" id="nav-next" type="button" title="Вперёд">&gt;</button>
+      <button class="icon-btn" id="nav-end" type="button" title="В конец">&gt;|</button>
+      <span class="move-counter" id="move-counter">0 / 0</span>
+      <button class="btn btn-small btn-ghost" id="flip-btn" type="button">Перевернуть</button>
+    </div>
+
+    <div class="trainer-panel">
+      <div class="trainer-head">
+        <span class="trainer-avatar" id="trainer-avatar">Т</span>
+        <div class="trainer-id">
+          <span class="trainer-name" id="trainer-name">Тренер</span>
+          <span class="trainer-role" id="trainer-role">Разбор партии</span>
+        </div>
+        <span class="trainer-move">
+          <img id="trainer-icon" alt="">
+          <span id="trainer-label">Ход</span>
+        </span>
+        <span class="trainer-eval" id="trainer-eval">0.00</span>
+        <button class="btn btn-small btn-ghost" id="speak-btn" type="button">Озвучить</button>
+        <label class="voice-toggle"><input type="checkbox" id="auto-speak" checked> Авто</label>
+      </div>
+      <p class="trainer-text" id="trainer-text">Выбери ход в списке или листай кнопками — здесь появится разбор.</p>
+      <div class="trainer-eval-line" id="trainer-eval-line"></div>
+    </div>
+  </section>
+
+  <aside class="analysis-side">
+    <div class="accuracy-cards">
+      <div class="acc-card">
+        <span class="acc-title">Ты</span>
+        <strong class="acc-value" id="acc-user">—</strong>
+        <span class="acc-sub">точность</span>
+      </div>
+      <div class="acc-card">
+        <span class="acc-title">Соперник</span>
+        <strong class="acc-value" id="acc-bot">—</strong>
+        <span class="acc-sub">точность</span>
+      </div>
+    </div>
+
+    <div class="side-block">
+      <h3>Ярлыки ходов</h3>
+      <div class="label-summary-head"><span>Ярлык</span><span>Ты / Соперник</span></div>
+      <div class="label-summary" id="label-summary"></div>
+    </div>
+
+    <div class="side-block grow">
+      <div class="side-block-head">
+        <h3>Ходы</h3>
+        <span class="badge" id="engine-badge">—</span>
+      </div>
+      <div class="move-list analysis-moves" id="move-list"></div>
+    </div>
+  </aside>
+</main>
+
+<div id="analysis-loading" class="loading-overlay">
+  <div class="spinner"></div>
+  <p>Считаю оценки, ярлыки и тексты тренера...</p>
+  <p class="hint">Партия разбирается один раз, дальше результат берётся из базы.</p>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/voice.js"></script>
+<script src="/static/analysis.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Закрыто">
+  <path d="M7.5 10V7.8a4.5 4.5 0 0 1 9 0V10" fill="none" stroke="#6f6d66" stroke-width="2" stroke-linecap="round"/>
+  <rect x="4.5" y="10" width="15" height="10.5" rx="2" fill="#6f6d66"/>
+  <circle cx="12" cy="14.8" r="1.7" fill="#f1f1ec"/>
+  <rect x="11.2" y="15.6" width="1.6" height="2.6" rx="0.8" fill="#f1f1ec"/>
+</svg>

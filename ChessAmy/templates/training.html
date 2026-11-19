@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — тренировка ярлыков</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body" data-page="training">
+
+<header class="topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <nav class="topnav">
+    <a href="/games" class="toplink">Игры</a>
+    <a href="/online" class="toplink">Онлайн</a>
+    <a href="/tournaments" class="toplink">Турниры</a>
+    <a href="/training" class="toplink active">Тренировка</a>
+    <a href="/import" class="toplink">Импорт</a>
+  </nav>
+  <div class="topbar-user">
+    <a class="btn btn-small btn-ghost" href="/profile">Профиль</a>
+    <a class="btn btn-small btn-ghost" href="/menu">В меню</a>
+    <button class="btn btn-small btn-ghost" id="logout-btn" type="button">Выйти</button>
+  </div>
+</header>
+
+<main class="page training-page">
+  <section class="panel">
+    <h2>Тренировка ярлыков</h2>
+    <p class="muted">
+      Позиции из твоих разобранных партий, где ты сыграл блестящий, аметистовый или идеальный ход.
+      Найди этот ход: щёлкни фигуру, затем клетку. Подсказка — «Показать ответ».
+    </p>
+
+    <div class="training-layout">
+      <div class="training-board-col">
+        <div class="board-wrap">
+          <div class="board" id="train-board"></div>
+        </div>
+        <div class="training-controls">
+          <button class="btn btn-small btn-ghost" id="train-flip" type="button">Перевернуть</button>
+          <button class="btn btn-small btn-ghost" id="train-reveal" type="button">Показать ответ</button>
+          <button class="btn btn-primary btn-small" id="train-next" type="button">Следующая</button>
+        </div>
+      </div>
+
+      <div class="training-side">
+        <div class="training-head">
+          <span class="badge" id="train-counter">—</span>
+          <span class="badge badge-gold" id="train-label">Ярлык</span>
+        </div>
+        <p class="training-feedback" id="train-feedback">Загружаю позиции...</p>
+        <p class="hint" id="train-hint"></p>
+        <a class="btn btn-small btn-ghost hidden" id="train-analysis" href="#">Открыть разбор</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/script.js"></script>
+</body>
+</html>

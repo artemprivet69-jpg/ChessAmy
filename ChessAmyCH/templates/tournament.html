@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — {{ item.name }}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body" data-page="tournament" data-num="{{ item.num }}" data-status="{{ record.status if record else 'new' }}">
+
+<header class="topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <nav class="topnav">
+    <a href="/tournaments" class="toplink active">Турниры</a>
+    <a href="/profile" class="toplink">Профиль</a>
+  </nav>
+  <div class="topbar-user">
+    {% if current_user %}
+    <a class="cup-chip" href="/profile" title="Кубки">
+      <img src="/static/icons/cup.svg" alt="">
+      <span>{{ current_user.cups }}</span>
+    </a>
+    {% endif %}
+    <a class="btn btn-small btn-ghost" href="/tournaments">К списку</a>
+  </div>
+</header>
+
+<main class="page tournament-page">
+  <section class="tournament-head">
+    <div class="tournament-head-main">
+      <span class="tournament-index">Турнир {{ item.num }} из 15</span>
+      <h1>{{ item.name }}</h1>
+      <div class="tournament-meta-line">
+        <span>{{ item.rounds }} раундов</span>
+        <span>Эло {{ item.elo_from }}–{{ item.elo_to }}</span>
+        <span>Титул: {{ item.title }}</span>
+        <span>Жизни:
+          {% for i in range(item.lives) %}
+            <span class="life-pip {% if record and i >= record.lives %}lost{% endif %}"></span>
+          {% endfor %}
+        </span>
+      </div>
+    </div>
+    <div class="tournament-head-action">
+      {% if not unlocked %}
+        <div class="lock-box">
+          <img class="lock-icon" src="/static/icons/lock.svg" alt="">
+          <span>Откроется через {{ left }}</span>
+        </div>
+      {% elif not record %}
+        <button class="btn btn-primary" id="start-tournament" type="button" data-num="{{ item.num }}">Начать турнир</button>
+      {% elif record.status == 'active' %}
+        <button class="btn btn-primary" id="play-round" type="button" data-num="{{ item.num }}">Играть раунд {{ record.current_round + 1 }}</button>
+      {% elif record.status == 'won' %}
+        <span class="badge badge-gold big">Турнир выигран</span>
+      {% elif record.status == 'lost' %}
+        <button class="btn btn-secondary" id="start-tournament" type="button" data-num="{{ item.num }}">Начать заново</button>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if record and record.status == 'won' %}
+  <section class="reward-banner">
+    <div class="reward-cup">♛</div>
+    <div>
+      <h2>Кубок и титул «{{ item.title }}»</h2>
+      <p>Турнир пройден без права на ошибку. Кубок добавлен в профиль.</p>
+      {% if next_tournament %}
+      <p class="reward-next">Скоро турнир «{{ next_tournament.name }}». Тренируйся!
+        {% if next_tournament.left == 'открыт' %}Он уже открыт.{% else %}Он откроется через {{ next_tournament.left }}.{% endif %}
+      </p>
+      {% else %}
+      <p class="reward-next">Все турниры позади. Ты — чемпион мира Chess.amy.</p>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if record and record.status == 'lost' %}
+  <section class="lost-banner">
+    <h2>Жизни закончились</h2>
+    <p>Турнир «{{ item.name }}» завершён. Можно начать заново — кубок выдаётся только за чистую победу.</p>
+  </section>
+  {% endif %}
+
+  {% if record and record.status == 'active' %}
+  <div class="life-strip">
+    <span class="life-label">Жизней осталось: {{ record.lives }}</span>
+    {% for i in range(item.lives) %}<span class="life-heart {% if i >= record.lives %}lost{% endif %}"></span>{% endfor %}
+    <span class="life-note">Поражение или ничья отнимают жизнь. Победа ведёт в следующий раунд.</span>
+  </div>
+  {% endif %}
+
+  {% if bracket %}
+  <section class="bracket">
+    {% for round in bracket.rounds %}
+    {% set is_current = record and record.status == 'active' and loop.index0 == record.current_round %}
+    <div class="round-col {% if is_current %}current{% endif %} {% if record and loop.index0 < record.current_round %}passed{% endif %}">
+      <div class="round-head">
+        <h3>{{ round.name }}</h3>
+        {% if is_current %}<span class="badge badge-green">Сейчас</span>{% endif %}
+      </div>
+
+      <div class="match-card player-match {% if is_current %}current{% endif %}">
+        <div class="match-label">Твоя партия</div>
+        <div class="match-row">
+          <span class="mp {% if round.player.white == 'Ты' %}me{% endif %}">
+            <span class="mp-color white-dot"></span>{{ round.player.white }}
+          </span>
+          <span class="mp-vs">—</span>
+          <span class="mp {% if round.player.black == 'Ты' %}me{% endif %}">
+            <span class="mp-color black-dot"></span>{{ round.player.black }}
+          </span>
+        </div>
+        <div class="match-foot">
+          {% if round.player.result == 'win' %}
+            <span class="badge badge-green">Победа</span>
+          {% elif round.player.result == 'loss' %}
+            <span class="badge badge-red">Поражение</span>
+          {% elif round.player.result == 'draw' %}
+            <span class="badge">Ничья</span>
+          {% elif round.player.game_id %}
+            <span class="badge">Партия идёт</span>
+          {% else %}
+            <span class="badge muted">Не сыграна</span>
+          {% endif %}
+          {% if round.player.game_id %}
+          <a class="match-link" href="/game/{{ round.player.game_id }}">Открыть</a>
+          <a class="match-link" href="/analysis/{{ round.player.game_id }}">Разбор</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="bot-games-label">Партии ботов</div>
+      {% for game in round.bot_games %}
+      <a class="match-card bot-match" href="/analysis/{{ game.game_id }}">
+        <div class="match-row">
+          <span class="mp">{{ game.white }}</span>
+          <span class="mp-score">{{ game.result }}</span>
+          <span class="mp">{{ game.black }}</span>
+        </div>
+        <div class="match-foot">
+          <span class="match-link">Смотреть разбор</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </section>
+  <p class="bracket-note">Можно открыть и разобрать любую партию турнира, даже если ты уже вылетел.</p>
+  {% elif unlocked %}
+  <section class="empty-tournament">
+    <h2>Сетка появится после старта</h2>
+    <p>В турнире {{ item.rounds }} раундов и {{ item.lives }} {% if item.lives == 1 %}жизнь{% else %}жизни{% endif %}. Соперники — боты уровня {{ item.elo_from }}–{{ item.elo_to }} Эло.</p>
+    {% if not record %}
+    <button class="btn btn-primary" id="start-tournament" type="button" data-num="{{ item.num }}">Начать турнир</button>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  <section class="tournament-rules">
+    <h3>Правила турнира</h3>
+    <ul>
+      <li>Победа в партии — переход в следующий раунд.</li>
+      <li>Поражение или ничья отнимают одну жизнь.</li>
+      <li>В турнирах 1–10 по три жизни, в турнирах 11–15 — одна.</li>
+      <li>За победу в турнире выдаётся кубок и титул «{{ item.title }}».</li>
+      <li>Слабые боты тоже собирают кубки — шанс сенсации 0.00234%.</li>
+    </ul>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/script.js"></script>
+</body>
+</html>

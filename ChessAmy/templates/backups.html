@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — резервные копии</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body" data-page="backups">
+
+<header class="topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <nav class="topnav">
+    <a href="/games" class="toplink">Игры</a>
+    <a href="/online" class="toplink">Онлайн</a>
+    <a href="/tournaments" class="toplink">Турниры</a>
+    <a href="/training" class="toplink">Тренировка</a>
+    <a href="/import" class="toplink">Импорт</a>
+  </nav>
+  <div class="topbar-user">
+    <a class="btn btn-small btn-ghost" href="/profile">Профиль</a>
+    <a class="btn btn-small btn-ghost" href="/menu">В меню</a>
+    <button class="btn btn-small btn-ghost" id="logout-btn" type="button">Выйти</button>
+  </div>
+</header>
+
+<main class="page backups-page">
+  <section class="panel">
+    <h2>Резервные копии</h2>
+    <p class="muted">
+      Копия создаётся сама при каждом запуске приложения, хранятся последние 20.
+      Восстановление заменяет текущую базу выбранной копией, поэтому перед заменой
+      приложение сохраняет ещё одну копию текущего состояния.
+    </p>
+    <div class="backup-meta">
+      <span><strong>База:</strong> <code>{{ db_path }}</code></span>
+      <span><strong>Размер:</strong> {{ (db_size / 1024)|round(1) }} КБ</span>
+    </div>
+    <div class="backup-actions">
+      <button class="btn btn-primary" id="backup-create" type="button">Создать копию сейчас</button>
+      <a class="btn btn-ghost" href="/profile">Аккаунт</a>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Сохранённые копии</h2>
+    {% if backups %}
+    <table class="games-table backups-table">
+      <thead>
+        <tr><th>Дата и время</th><th>Размер</th><th>Файл</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for item in backups %}
+        <tr>
+          <td>{{ item.created.replace('T', ' ')[:16] }}</td>
+          <td>{{ (item.size / 1024)|round(1) }} КБ</td>
+          <td class="muted">{{ item.name }}</td>
+          <td>
+            <button class="btn btn-small btn-ghost backup-restore" type="button" data-name="{{ item.name }}">Восстановить</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Копий пока нет. Нажми «Создать копию сейчас».</p>
+    {% endif %}
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/script.js"></script>
+</body>
+</html>

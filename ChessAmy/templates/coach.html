@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — выбор тренера</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body" data-page="coach">
+
+<header class="topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <div class="topbar-user">
+    {% if current_user %}
+    <a class="user-chip" href="/profile">
+      <span class="avatar">{{ current_user.username[0]|upper }}</span>
+      <span class="user-name">{{ current_user.username }}</span>
+      <span class="elo-badge">{{ current_user.elo }}</span>
+    </a>
+    <a class="cup-chip" href="/profile" title="Кубки">
+      <img src="/static/icons/cup.svg" alt="">
+      <span>{{ current_user.cups }}</span>
+    </a>
+    {% endif %}
+    <a class="btn btn-small btn-ghost" href="/menu">В меню</a>
+  </div>
+</header>
+
+<main class="page coach-page">
+  {% if locked %}
+  <section class="coach-locked">
+    <span class="coach-avatar coach-avatar-xl" style="background: {{ selected.color }}">{{ selected.name[0] }}</span>
+    <div class="coach-locked-info">
+      <span class="coach-overline">Твой тренер</span>
+      <h1>{{ selected.name }} <span class="coach-role-inline">{{ selected.role }}</span></h1>
+      <p class="coach-tagline">{{ selected.tagline }}</p>
+      <p class="muted">{{ selected.desc }}</p>
+      <div class="coach-locked-actions">
+        <button class="btn btn-secondary" id="coach-listen-locked" type="button">Прослушать голос</button>
+        <span class="badge badge-gold">Выбран навсегда</span>
+      </div>
+    </div>
+  </section>
+  <p class="coach-note">Тренера нельзя поменять после выбора. Он будет комментировать и озвучивать разборы партий.</p>
+  {% else %}
+  <section class="coach-hero">
+    <span class="coach-overline">Один раз и навсегда</span>
+    <h1>Выбери тренера</h1>
+    <p class="muted">Тренер будет разбирать твои партии, объяснять ярлыки и озвучивать ходы своим голосом. После выбора поменять его нельзя.</p>
+  </section>
+
+  <div class="coach-grid">
+    {% for c in coaches %}
+    <div class="coach-card" tabindex="0" role="button" data-coach-id="{{ c.id }}">
+      <span class="coach-avatar" style="background: {{ c.color }}">{{ c.name[0] }}</span>
+      <span class="coach-name">{{ c.name }}</span>
+      <span class="coach-role">{{ c.role }}</span>
+      <span class="coach-tagline">{{ c.tagline }}</span>
+      <span class="coach-desc">{{ c.desc }}</span>
+      <button class="coach-listen" type="button" data-listen="{{ c.id }}">Прослушать</button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="coach-actions">
+    <span class="coach-selected-label" id="coach-selected-label">Тренер не выбран</span>
+    <button class="btn btn-primary" id="coach-confirm" type="button" disabled>Выбрать навсегда</button>
+  </div>
+  {% endif %}
+</main>
+
+<div id="coach-modal" class="modal-overlay hidden">
+  <div class="modal-card small">
+    <h2>Тренер останется навсегда</h2>
+    <p class="muted">Ты выбираешь <strong id="coach-modal-name"></strong>. Поменять тренера после этого нельзя.</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="coach-confirm-yes" type="button">Да, выбрать</button>
+      <button class="btn btn-ghost" type="button" data-close-modal>Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+window.COACHES = {{ coaches|tojson }};
+window.SELECTED_COACH = {{ selected|tojson }};
+</script>
+<script src="/static/voice.js"></script>
+<script src="/static/script.js"></script>
+</body>
+</html>

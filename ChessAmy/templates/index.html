@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — вход</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="auth-body" data-page="index">
+
+<main class="auth-layout">
+  <section class="auth-promo">
+    <div class="promo-board" aria-hidden="true">
+      <div class="promo-cell light"></div><div class="promo-cell dark"></div><div class="promo-cell light"></div><div class="promo-cell dark"></div>
+      <div class="promo-cell dark"></div><div class="promo-cell light"></div><div class="promo-cell dark"></div><div class="promo-cell light"></div>
+      <div class="promo-cell light"></div><div class="promo-cell dark"></div><div class="promo-cell light"></div><div class="promo-cell dark"></div>
+      <div class="promo-cell dark"></div><div class="promo-cell light"></div><div class="promo-cell dark"></div><div class="promo-cell light"></div>
+      <span class="promo-piece white">♞</span>
+      <span class="promo-piece black">♜</span>
+    </div>
+    <h1 class="brand-title">Chess.amy</h1>
+    <p class="brand-sub">Локальные шахматы с ботами, турнирами и разбором партий.</p>
+    <ul class="promo-points">
+      <li>15 уровней Stockfish и быстрая модель 1 Эло</li>
+      <li>12 ярлыков ходов и тренер после партии</li>
+      <li>15 турниров с жизнями, кубками и титулами</li>
+    </ul>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" data-tab="login" type="button">Вход</button>
+        <button class="auth-tab" data-tab="register" type="button">Регистрация</button>
+      </div>
+
+      <form id="login-form" class="auth-form" autocomplete="off">
+        <label class="field">
+          <span>Ник</span>
+          <input type="text" name="username" id="login-username" maxlength="20" placeholder="Твой ник" required>
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input type="password" name="password" id="login-password" maxlength="20" placeholder="Пароль" required>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="login-remember">
+          <span>Запомнить навсегда</span>
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">Войти</button>
+        <button class="btn btn-link" id="forgot-btn" type="button">Забыли пароль?</button>
+      </form>
+
+      <form id="register-form" class="auth-form hidden" autocomplete="off">
+        <label class="field">
+          <span>Ник</span>
+          <input type="text" name="username" id="register-username" maxlength="20" placeholder="3–20 символов" required>
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input type="password" name="password" id="register-password" maxlength="20" placeholder="4–20 символов, буквы и цифры" required>
+        </label>
+        <p class="hint">Разрешены буквы, цифры и символы _ ! ?. Обязательно хотя бы одна буква и одна цифра.</p>
+        <label class="check">
+          <input type="checkbox" id="register-remember">
+          <span>Запомнить навсегда</span>
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">Создать аккаунт</button>
+      </form>
+
+      <form id="recover-form" class="auth-form hidden" autocomplete="off">
+        <p class="auth-form-title">Восстановление доступа</p>
+        <label class="field">
+          <span>Ник</span>
+          <input type="text" name="username" id="recover-username" maxlength="20" placeholder="Твой ник" required>
+        </label>
+        <label class="field">
+          <span>Код восстановления</span>
+          <input type="text" name="code" id="recover-code" maxlength="20" placeholder="AMY-XXXX-XXXX-XXXX" required>
+        </label>
+        <label class="field">
+          <span>Новый пароль</span>
+          <input type="password" name="new_password" id="recover-password" maxlength="20" placeholder="4–20 символов, буквы и цифры" required>
+        </label>
+        <p class="hint">Код выдаётся при регистрации и хранится только у тебя. После смены пароля код обновляется.</p>
+        <button class="btn btn-primary btn-block" type="submit">Сменить пароль</button>
+        <button class="btn btn-link" id="recover-back" type="button">Назад ко входу</button>
+      </form>
+
+      <form id="import-form" class="auth-form hidden" autocomplete="off">
+        <p class="auth-form-title">Перенос аккаунта</p>
+        <label class="field">
+          <span>Файл аккаунта (.json)</span>
+          <input type="file" id="import-file" accept="application/json,.json" required>
+        </label>
+        <label class="field">
+          <span>Новый ник</span>
+          <input type="text" name="username" id="import-username" maxlength="20" placeholder="3–20 символов" required>
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input type="password" name="password" id="import-password" maxlength="20" placeholder="4–20 символов, буквы и цифры" required>
+        </label>
+        <p class="hint">Эло, кубки, титулы и партии из файла перейдут в новый аккаунт на этом компьютере.</p>
+        <button class="btn btn-primary btn-block" type="submit">Загрузить аккаунт</button>
+        <button class="btn btn-link" id="import-back" type="button">Назад ко входу</button>
+      </form>
+
+      <div id="auth-error" class="auth-error hidden"></div>
+
+      <div class="auth-sep"><span>или</span></div>
+      <button id="skip-btn" class="btn btn-ghost btn-block" type="button">Пропустить и играть как гость</button>
+      <button id="import-open" class="btn btn-link" type="button">Перенести аккаунт с другого компьютера</button>
+      <p class="hint center">Гостю доступны обычные игры без Эло и турниров.</p>
+    </div>
+  </section>
+</main>
+
+<div id="recovery-modal" class="modal-overlay hidden">
+  <div class="modal-card small">
+    <h2>Код восстановления</h2>
+    <p class="muted">Сохрани код. Без него пароль не восстановить — почты в приложении нет.</p>
+    <div class="recovery-code" id="recovery-code-value">—</div>
+    <div class="modal-actions">
+      <button id="copy-recovery" class="btn btn-ghost" type="button">Скопировать</button>
+      <button id="recovery-done" class="btn btn-primary" type="button">Я сохранил код</button>
+    </div>
+  </div>
+</div>
+
+<div id="remember-modal" class="modal-overlay {% if not remember_name %}hidden{% endif %}">
+  <div class="modal-card small">
+    <h2>Ты — {{ remember_name }}?</h2>
+    <p class="muted">Мы помним этот аккаунт на этом компьютере.</p>
+    <div class="modal-actions">
+      <button id="remember-yes" class="btn btn-primary" type="button">Да, зайти в аккаунт</button>
+      <button id="remember-no" class="btn btn-ghost" type="button">Нет, не мой</button>
+    </div>
+  </div>
+</div>
+
+<div id="need-account" class="modal-overlay {% if not need_account %}hidden{% endif %}">
+  <div class="modal-card small">
+    <h2>Нужен аккаунт</h2>
+    <p class="muted">Турниры и игра на Эло доступны только зарегистрированным игрокам.</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" type="button" data-close-modal>Понятно</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

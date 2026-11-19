@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — импорт и позиция</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body" data-page="import">
+
+<header class="topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <nav class="topnav">
+    <a href="/games" class="toplink">Игры</a>
+    <a href="/online" class="toplink">Онлайн</a>
+    <a href="/tournaments" class="toplink">Турниры</a>
+    <a href="/import" class="toplink active">Импорт</a>
+  </nav>
+  <div class="topbar-user">
+    <a class="btn btn-small btn-ghost" href="/profile">Профиль</a>
+    <a class="btn btn-small btn-ghost" href="/menu">В меню</a>
+    <button class="btn btn-small btn-ghost" id="logout-btn" type="button">Выйти</button>
+  </div>
+</header>
+
+<main class="page import-page">
+  <section class="panel">
+    <h2>Импорт PGN</h2>
+    <p class="muted">Вставь PGN или загрузи файл. Партия попадёт в разбор с ярлыками и тренером.</p>
+    <label class="field">
+      <span>PGN</span>
+      <textarea id="pgn-text" rows="9" placeholder="[Event &quot;Матч&quot;]&#10;1. e4 e5 2. Nf3 Nc6 3. Bb5 ..."></textarea>
+    </label>
+    <div class="import-actions">
+      <label class="btn btn-ghost file-btn">
+        Загрузить файл
+        <input type="file" id="pgn-file" accept=".pgn,application/x-chess-pgn,text/plain">
+      </label>
+      <button class="btn btn-primary" id="pgn-import" type="button">Импортировать и разобрать</button>
+    </div>
+    <p class="hint" id="pgn-status"></p>
+  </section>
+
+  <section class="panel">
+    <h2>Позиция из FEN</h2>
+    <p class="muted">
+      Собери позицию на доске или вставь FEN. Выбери фигуру на панели и щёлкни по клетке,
+      «ластик» убирает фигуру. Затем нажми «Играть с этой позиции» — партия начнётся с этого положения.
+    </p>
+    <div class="import-grid">
+      <div class="import-board-col">
+        <div class="board-wrap">
+          <div class="board edit-board" id="edit-board"></div>
+        </div>
+        <div class="edit-palette" id="edit-palette"></div>
+        <div class="edit-actions">
+          <button class="btn btn-small btn-ghost" id="edit-start" type="button">Начальная позиция</button>
+          <button class="btn btn-small btn-ghost" id="edit-clear" type="button">Очистить доску</button>
+          <button class="btn btn-small btn-ghost" id="edit-copy" type="button">Копировать FEN</button>
+        </div>
+        <p class="hint" id="edit-status"></p>
+      </div>
+
+      <div class="import-controls">
+        <label class="field">
+          <span>FEN</span>
+          <input id="fen-input" maxlength="120" placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">
+        </label>
+        <button class="btn btn-secondary" id="fen-load" type="button">Загрузить FEN на доску</button>
+        <label class="field">
+          <span>Кто ходит</span>
+          <select id="edit-turn">
+            <option value="white">Белые</option>
+            <option value="black">Чёрные</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Соперник</span>
+          <select id="fen-bot">
+            <option value="1">Новичок 1 Эло</option>
+            <option value="1000" selected>Пешка Петя · 1000</option>
+            <option value="1200">Конь Костя · 1200</option>
+            <option value="1600">Гамбит Гриша · 1600</option>
+            <option value="2000">Эндшпиль Эдик · 2000</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Контроль времени</span>
+          <select id="fen-tc">
+            <option value="10+0" selected>10+0</option>
+            <option value="5+3">5+3</option>
+            <option value="15+10">15+10</option>
+          </select>
+        </label>
+        <button class="btn btn-primary" id="fen-play" type="button">Играть с этой позиции</button>
+        <p class="hint" id="fen-status"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/script.js"></script>
+</body>
+</html>

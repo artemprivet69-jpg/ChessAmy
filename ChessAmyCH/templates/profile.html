@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — профиль {{ profile.username }}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body" data-page="profile">
+
+<header class="topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <nav class="topnav">
+    <a href="/games" class="toplink">Игры</a>
+    <a href="/online" class="toplink">Онлайн</a>
+    <a href="/tournaments" class="toplink">Турниры</a>
+    <a href="/training" class="toplink">Тренировка</a>
+    <a href="/import" class="toplink">Импорт</a>
+  </nav>
+  <div class="topbar-user">
+    <a class="cup-chip" href="/profile" title="Кубки">
+      <img src="/static/icons/cup.svg" alt="">
+      <span>{{ profile.cups }}</span>
+    </a>
+    <a class="btn btn-small btn-ghost" href="/menu">В меню</a>
+    <button class="btn btn-small btn-ghost" id="logout-btn" type="button">Выйти</button>
+  </div>
+</header>
+
+<main class="page profile-page">
+  <section class="profile-hero">
+    <div class="profile-avatar">{{ profile.username[0]|upper }}</div>
+    <div class="profile-main">
+      <div class="profile-name-row">
+        <h1>{{ profile.username }}</h1>
+        {% if profile.elo >= 4000 %}<span class="legend-badge">Легенда</span>{% endif %}
+        <span class="badge badge-gold">Кубков: {{ profile.cups }}</span>
+      </div>
+      <div class="elo-line">
+        <span class="elo-label">Эло</span>
+        <span class="elo-value">{{ profile.elo }}</span>
+        <span class="elo-max">из 4000</span>
+      </div>
+      <div class="elo-progress"><div class="elo-progress-fill" style="width: {{ (profile.elo / 4000 * 100)|round(1) }}%"></div></div>
+      <p class="muted">Старт — 500. Эло меняется только в турнирах и в режиме «Онлайн с ботами».</p>
+      <div class="coach-line">
+        <span class="trainer-avatar" style="background: {{ coach.color }}">{{ coach.name[0] }}</span>
+        <span class="coach-line-text"><strong>{{ coach.name }}</strong><span>{{ coach.role }}</span></span>
+        <span class="badge">Тренер</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats-grid">
+    <div class="stat-card"><span class="stat-value">{{ stats.total }}</span><span class="stat-label">Партий</span></div>
+    <div class="stat-card win"><span class="stat-value">{{ stats.wins }}</span><span class="stat-label">Побед</span></div>
+    <div class="stat-card loss"><span class="stat-value">{{ stats.losses }}</span><span class="stat-label">Поражений</span></div>
+    <div class="stat-card draw"><span class="stat-value">{{ stats.draws }}</span><span class="stat-label">Ничьих</span></div>
+    <div class="stat-card gold"><span class="stat-value">{{ profile.cups }}</span><span class="stat-label">Кубков</span></div>
+  </section>
+
+  <section class="panel account-panel">
+    <h2>Аккаунт и данные</h2>
+    <div class="account-grid">
+      <div class="account-block">
+        <h3>Смена пароля</h3>
+        <form id="change-password-form" class="account-form" autocomplete="off">
+          <label class="field">
+            <span>Текущий пароль</span>
+            <input type="password" id="current-password" maxlength="20" required>
+          </label>
+          <label class="field">
+            <span>Новый пароль</span>
+            <input type="password" id="new-password" maxlength="20" placeholder="4–20 символов, буквы и цифры" required>
+          </label>
+          <button class="btn btn-secondary" type="submit">Сменить пароль</button>
+        </form>
+      </div>
+
+      <div class="account-block">
+        <h3>Код восстановления</h3>
+        <p class="hint">Нужен, если забудешь пароль. Новый код отменяет старый — сохрани его.</p>
+        <div class="recovery-code small" id="profile-recovery">—</div>
+        <button class="btn btn-secondary" id="generate-recovery" type="button">Создать новый код</button>
+      </div>
+
+      <div class="account-block">
+        <h3>Задержка бота</h3>
+        <p class="hint">Сколько секунд бот думает перед своим ходом. Задержка не влияет на силу игры.</p>
+        <label class="field">
+          <span>Секунды</span>
+          <select id="bot-delay">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </label>
+        <button class="btn btn-secondary" id="save-delay" type="button">Сохранить задержку</button>
+      </div>
+
+      <div class="account-block">
+        <h3>Оформление и звук</h3>
+        <label class="field">
+          <span>Тема</span>
+          <select id="ui-theme">
+            <option value="light">Светлая</option>
+            <option value="dark">Тёмная</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="ui-sound"> <span>Звуки ходов</span></label>
+        <label class="check"><input type="checkbox" id="ui-coords"> <span>Координаты на доске</span></label>
+        <label class="field">
+          <span>Скорость фигур: <b id="piece-speed-value">220</b> мс</span>
+          <input type="range" id="piece-speed" min="120" max="600" step="20" value="220">
+        </label>
+        <button class="btn btn-secondary" id="save-ui" type="button">Сохранить оформление</button>
+      </div>
+
+      <div class="account-block">
+        <h3>Тема доски</h3>
+        <p class="hint">Пресеты или свои цвета клеток. Тема применяется на всех досках приложения.</p>
+        <div class="board-themes" id="board-themes"></div>
+        <div class="board-custom">
+          <label class="field">
+            <span>Светлые клетки</span>
+            <input type="color" id="board-light" value="#eeeed2">
+          </label>
+          <label class="field">
+            <span>Тёмные клетки</span>
+            <input type="color" id="board-dark" value="#769656">
+          </label>
+        </div>
+        <button class="btn btn-secondary" id="save-board" type="button">Применить свои цвета</button>
+      </div>
+
+      <div class="account-block">
+        <h3>Перенос аккаунта</h3>
+        <p class="hint">Файл хранит Эло, кубки, титулы и партии. Импорт добавляет партии в текущий аккаунт.</p>
+        <div class="account-actions">
+          <a class="btn btn-secondary" href="/api/account/export">Скачать копию</a>
+          <label class="btn btn-ghost file-btn">
+            Загрузить файл
+            <input type="file" id="profile-import-file" accept="application/json,.json">
+          </label>
+          <a class="btn btn-ghost" href="/backups">Резервные копии</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="profile-columns">
+    <section class="panel cups-panel">
+      <div class="cup-summary">
+        <img src="/static/icons/cup.svg" alt="">
+        <span>{{ cups|length }}</span>
+      </div>
+      <h2>Кубки</h2>
+      {% if cups %}
+      <div class="cup-list">
+        {% for cup in cups %}
+        <a class="cup-item" href="/tournament/{{ cup.num }}">
+          <img src="/static/icons/cup.svg" alt="">
+          <span class="cup-item-text">
+            <strong>{{ cup.name }}</strong>
+            <span>{{ cup.title }}</span>
+          </span>
+          <span class="cup-item-link">Открыть</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">Кубок выдаётся за победу в турнире. Начни с «Первого шага».</p>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      <h2>Титулы</h2>
+      {% if titles %}
+      <div class="title-chips">
+        {% for title in titles %}<span class="title-chip">{{ title }}</span>{% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">Пока ни одного титула. Титул выдаётся вместе с кубком за победу в турнире.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Турнирный прогресс</h2>
+    <div class="progress-list">
+      {% for t in tournaments %}
+      <div class="progress-row {% if not t.unlocked %}locked{% endif %}">
+        <span class="progress-num">{{ t.num }}</span>
+        <span class="progress-name">{{ t.name }}</span>
+        <span class="progress-state">
+          {% if t.won %}<span class="badge badge-gold">Кубок</span>
+          {% elif t.status == 'active' %}<span class="badge badge-green">Идёт</span>
+          {% elif t.status == 'lost' %}<span class="badge badge-red">Вылет</span>
+          {% elif t.unlocked %}<span class="badge">Открыт</span>
+          {% else %}<span class="badge muted">{{ t.left }}</span>{% endif %}
+        </span>
+        <a class="progress-link" href="/tournament/{{ t.num }}">{% if t.unlocked %}Войти{% else %}—{% endif %}</a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Последние партии</h2>
+    {% if recent_games %}
+    <table class="games-table">
+      <thead>
+        <tr><th>№</th><th>Режим</th><th>Соперник</th><th>Результат</th><th>Причина</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for g in recent_games %}
+        <tr>
+          <td>{{ g.id }}</td>
+          <td>{{ 'Турнир' if g.mode == 'tournament' else ('На Эло' if g.mode == 'online' else 'Игра') }}</td>
+          <td>{{ g.bot_name }}</td>
+          <td>
+            {% if g.result == 'win' %}<span class="res win">Победа</span>
+            {% elif g.result == 'loss' %}<span class="res loss">Поражение</span>
+            {% elif g.result == 'draw' %}<span class="res draw">Ничья</span>
+            {% else %}<span class="res">—</span>{% endif %}
+          </td>
+          <td class="muted">
+            {% set reason_map = {'checkmate': 'Мат', 'stalemate': 'Пат', 'insufficient': 'Недостаточно материала', 'fifty': 'Правило 50 ходов', 'seventyfive': 'Правило 75 ходов', 'repetition': 'Троекратное повторение', 'fivefold': 'Пятикратное повторение', 'timeout': 'Просрочка времени', 'resign': 'Сдача', 'agreement': 'Соглашение на ничью'} %}
+            {{ reason_map.get(g.reason, g.reason or '—') }}
+          </td>
+          <td><a class="trophy-link" href="/analysis/{{ g.id }}">Разбор</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Партий пока нет. Заходи в «Игры» и выбирай бота.</p>
+    {% endif %}
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/script.js"></script>
+</body>
+</html>

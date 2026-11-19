@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ ui_settings.theme }}" data-sound="{{ 'on' if ui_settings.sound else 'off' }}" data-coords="{{ 'on' if ui_settings.coordinates else 'off' }}" data-board="{{ ui_settings.board_theme }}" style="--board-light: {{ ui_settings.board_light }}; --board-dark: {{ ui_settings.board_dark }}; --piece-speed: {{ ui_settings.piece_speed }}ms;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess.amy — партия</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="app-body game-body" data-page="game" data-game-id="{{ game_id }}">
+
+<header class="topbar game-topbar">
+  <a class="brand" href="/menu">
+    <span class="brand-mark">♞</span>
+    <span class="brand-text">Chess.amy</span>
+  </a>
+  <div class="game-head-info">
+    <span class="badge" id="mode-badge">
+      {% if game.mode == 'tournament' %}Турнир{% elif game.mode == 'online' %}На Эло{% else %}Игра{% endif %}
+    </span>
+    <span class="badge cheat-top">CHEAT</span>
+    <span class="muted" id="tc-head">{{ game.time_control }}</span>
+  </div>
+  <div class="topbar-user">
+    {% if current_user %}
+    <a class="cup-chip" href="/profile" title="Кубки">
+      <img src="/static/icons/cup.svg" alt="">
+      <span>{{ current_user.cups }}</span>
+    </a>
+    {% endif %}
+    <a class="btn btn-small btn-ghost" href="/menu">В меню</a>
+  </div>
+</header>
+
+<main class="game-layout">
+  <section class="board-column">
+    <div class="player-row opponent" id="opponent-row">
+      <span class="avatar" id="opp-avatar">{{ game.bot_name[0] }}</span>
+      <div class="player-meta">
+        <span class="player-name" id="opp-name">{{ game.bot_name }}</span>
+        <span class="player-rating" id="opp-elo">{{ game.bot_elo }} Эло</span>
+      </div>
+      <div class="clock" id="clock-top">--:--</div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board" aria-label="Шахматная доска" role="grid" tabindex="0"></div>
+      <svg class="board-arrows" id="board-arrows" viewBox="0 0 8 8" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="player-row me" id="player-row">
+      <span class="avatar player-avatar" id="my-avatar">
+        {% if current_user %}{{ current_user.username[0]|upper }}{% else %}Г{% endif %}
+      </span>
+      <div class="player-meta">
+        <span class="player-name" id="my-name">
+          {% if current_user %}{{ current_user.username }}{% else %}Гость{% endif %}
+        </span>
+        <span class="player-rating" id="my-elo">
+          {% if current_user %}{{ current_user.elo }} Эло{% else %}без рейтинга{% endif %}
+        </span>
+      </div>
+      <div class="clock" id="clock-bottom">--:--</div>
+    </div>
+
+    <div class="game-status" id="status-line" aria-live="polite">Загрузка партии...</div>
+  </section>
+
+  <aside class="game-side">
+    <div class="side-head">
+      <h2>Партия</h2>
+      <span class="badge" id="tc-label">{{ game.time_control }}</span>
+    </div>
+    <p class="clock-note" id="clock-note"></p>
+    <div class="cheat-panel" id="cheat-panel">
+      <div class="cheat-head">
+        <span class="cheat-dot"></span>
+        <strong>Cheat mode</strong>
+        <span class="cheat-badge">CH</span>
+      </div>
+      <button class="btn btn-primary btn-block" id="hint-btn" type="button">Показать лучший ход</button>
+      <label class="cheat-auto"><input type="checkbox" id="auto-hint" checked> Авто-подсказка</label>
+      <div class="hint-result" id="hint-result"><span class="hint-empty">Стрелка покажет лучший ход.</span></div>
+    </div>
+    <div class="move-list" id="move-list"></div>
+    <div class="game-buttons">
+      <button class="btn btn-ghost" id="draw-btn" type="button">Предложить ничью</button>
+      <button class="btn btn-danger-ghost" id="resign-btn" type="button">Сдать партию</button>
+      <a class="btn btn-ghost" href="/menu">Выйти</a>
+    </div>
+    <p class="game-note">Cheat-версия: стрелка и ярлык показывают лучший ход. Полный разбор — после финала.</p>
+  </aside>
+</main>
+
+<div id="promotion-modal" class="modal-overlay hidden">
+  <div class="modal-card small">
+    <h2>Выбери фигуру</h2>
+    <div class="promotion-row">
+      <button class="promotion-btn" data-piece="q" type="button"><img src="/static/pieces/wQ.svg" alt="Ферзь"></button>
+      <button class="promotion-btn" data-piece="r" type="button"><img src="/static/pieces/wR.svg" alt="Ладья"></button>
+      <button class="promotion-btn" data-piece="b" type="button"><img src="/static/pieces/wB.svg" alt="Слон"></button>
+      <button class="promotion-btn" data-piece="n" type="button"><img src="/static/pieces/wN.svg" alt="Конь"></button>
+    </div>
+  </div>
+</div>
+
+<div id="result-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="result-icon" id="result-icon">♚</div>
+    <h2 id="result-title">Партия завершена</h2>
+    <p class="muted" id="result-reason"></p>
+    <div class="result-score" id="result-score"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="rematch-btn" type="button">Реванш</button>
+      <a class="btn btn-secondary" id="analysis-link" href="#">Анализ партии</a>
+      <a class="btn btn-ghost" href="/menu">Выйти</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/script.js"></script>
+</body>
+</html>
